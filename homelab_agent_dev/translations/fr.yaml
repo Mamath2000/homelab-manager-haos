@@ -1,0 +1,6 @@
+configuration:
+  install_token:
+    name: Jeton d'installation
+    description: >-
+      Copié depuis Homelab Manager (Ajouter un hôte › Home Assistant OS). Ne sert qu'au premier
+      démarrage ; un nouveau jeton réenrôle l'agent.

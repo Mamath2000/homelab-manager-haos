@@ -1,0 +1,56 @@
+# Follows the agent of homelab-manager: every day (and on demand, e.g. after `make docker-release`
+# of the hub), when the agent of its last image on Docker Hub differs from this app, the image is built
+# and the version written: Supervisor then offers (or installs, with auto-update) the update.
+name: Sync agent
+
+on:
+  schedule:
+    - cron: "17 5 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Check homelab-manager image
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.check.outputs.changed }}
+      version: ${{ steps.check.outputs.version }}
+      hm_version: ${{ steps.check.outputs.hm_version }}
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - name: Compare agent versions
+        id: check
+        run: |
+          # last release of the hub image (Docker Hub, always pushed by make docker-release)
+          hm_version=$(curl -fsSL "https://hub.docker.com/v2/repositories/mathmath350/homelab-manager/tags?page_size=100" \
+            | jq -r '.results[].name' | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1)
+          # version of the agent binary it ships
+          docker pull -q "mathmath350/homelab-manager:${hm_version}" >/dev/null
+          agent=$(docker run --rm --entrypoint cat "mathmath350/homelab-manager:${hm_version}" /app/agent/VERSION | tr -d '[:space:]')
+          current=$(sed -n 's/^version: "\(.*\)"/\1/p' homelab_agent/config.yaml)
+          echo "homelab-manager ${hm_version}, agent ${agent}, app ${current}"
+          # a packaging suffix (0.1.23-1) belongs to the same agent
+          if [ -n "${agent}" ] && [ "${agent}" != "${current%%-*}" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+          echo "version=${agent}" >> "$GITHUB_OUTPUT"
+          echo "hm_version=${hm_version}" >> "$GITHUB_OUTPUT"
+
+  build:
+    name: Build and publish
+    needs: check
+    if: needs.check.outputs.changed == 'true'
+    permissions:
+      contents: write
+      id-token: write
+      packages: write
+    uses: ./.github/workflows/build.yaml
+    with:
+      version: ${{ needs.check.outputs.version }}
+      hm_version: ${{ needs.check.outputs.hm_version }}
+      commit: true

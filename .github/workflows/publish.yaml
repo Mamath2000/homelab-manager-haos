@@ -1,0 +1,41 @@
+# A packaging change pushed with a new version in config.yaml (0.1.23-1): its image is built.
+# Nothing is pushed when the image of that version exists already.
+name: Publish
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - homelab_agent/config.yaml
+      - homelab_agent/Dockerfile
+      - homelab_agent/rootfs/**
+
+permissions:
+  contents: read
+
+jobs:
+  version:
+    name: Read version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+      hm_version: ${{ steps.v.outputs.hm_version }}
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - id: v
+        run: |
+          echo "version=$(sed -n 's/^version: "\(.*\)"/\1/p' homelab_agent/config.yaml)" >> "$GITHUB_OUTPUT"
+          echo "hm_version=$(sed -n 's/^ARG HM_VERSION=//p' homelab_agent/Dockerfile)" >> "$GITHUB_OUTPUT"
+
+  build:
+    name: Build and publish
+    needs: version
+    if: needs.version.outputs.version != '0.0.0'
+    permissions:
+      contents: read
+      id-token: write
+      packages: write
+    uses: ./.github/workflows/build.yaml
+    with:
+      version: ${{ needs.version.outputs.version }}
+      hm_version: ${{ needs.version.outputs.hm_version }}

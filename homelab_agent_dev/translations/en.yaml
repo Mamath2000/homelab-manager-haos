@@ -1,0 +1,6 @@
+configuration:
+  install_token:
+    name: Install token
+    description: >-
+      Copied from Homelab Manager (Add a host › Home Assistant OS). Only used on the first start;
+      a new token enrolls the agent again.

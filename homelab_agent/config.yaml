@@ -1,0 +1,23 @@
+# https://developers.home-assistant.io/docs/apps/configuration#app-configuration
+# version = agent version (homelab-manager agent/VERSION), set by .github/workflows/sync.yaml;
+# a packaging change alone gets a suffix (0.1.23-1).
+name: Homelab Manager Agent
+version: "0.0.0"
+slug: homelab_agent
+description: Agent Homelab Manager pour Home Assistant OS (hôte, sauvegardes Proxmox VE)
+url: https://github.com/Mamath2000/homelab-manager-haos
+arch:
+  - amd64
+init: false
+startup: services
+boot: auto
+# the VM's interfaces: their MAC addresses link the host to its Proxmox VE guest
+host_network: true
+# /os/info and /host/info (role "default" reads every /<x>/info)
+hassio_api: true
+hassio_role: default
+image: ghcr.io/mamath2000/homelab-agent-haos
+options:
+  install_token: ""
+schema:
+  install_token: password?
