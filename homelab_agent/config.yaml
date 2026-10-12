@@ -2,7 +2,7 @@
 # version = agent version (homelab-manager agent/VERSION), set by .github/workflows/sync.yaml;
 # a packaging change alone gets a suffix (0.1.23-1).
 name: Homelab Manager Agent
-version: "0.0.0"
+version: "0.1.23"
 slug: homelab_agent
 description: Agent Homelab Manager pour Home Assistant OS (hôte, sauvegardes Proxmox VE)
 url: https://github.com/Mamath2000/homelab-manager-haos
