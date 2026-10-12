@@ -31,8 +31,9 @@ jobs:
     name: Build and publish
     needs: version
     if: needs.version.outputs.version != '0.0.0'
+    # contents: write is checked against the commit job of build.yaml, skipped here (commit not asked)
     permissions:
-      contents: read
+      contents: write
       id-token: write
       packages: write
     uses: ./.github/workflows/build.yaml
