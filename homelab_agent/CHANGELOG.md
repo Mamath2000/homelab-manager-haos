@@ -1,3 +1,7 @@
+## 0.4.2
+
+- Agent 0.4.2, image Homelab Manager 0.2.12
+
 ## 0.4.1
 
 - Agent 0.4.1, image Homelab Manager 0.2.1
