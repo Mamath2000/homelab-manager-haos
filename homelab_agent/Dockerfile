@@ -1,7 +1,7 @@
 # https://developers.home-assistant.io/docs/apps/configuration#app-dockerfile
 # HM_VERSION: release of homelab-manager whose signed agent binary is shipped (set by sync.yaml).
 # HUB_IMAGE: override for a local test with an unreleased hub image (make build HUB_IMAGE=…).
-ARG HM_VERSION=0.2.28
+ARG HM_VERSION=0.2.29
 ARG HUB_IMAGE=mathmath350/homelab-manager:${HM_VERSION}
 ARG BUILD_FROM=ghcr.io/home-assistant/base-debian:trixie
 
