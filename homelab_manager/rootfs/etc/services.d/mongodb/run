@@ -9,5 +9,7 @@ bashio::log.info "Démarrage de MongoDB 7 sur le stockage persistant"
 mongod_args=(--dbpath /data/mongodb --bind_ip 127.0.0.1 --port 27017)
 if ! bashio::config.true 'verbose_logs'; then
     mongod_args+=(--quiet)
+    # mongod has no setting below info level: drop its I/D lines, keep warnings and errors.
+    exec > >(grep --line-buffered -vE '"s":"(I|D[1-5])"')
 fi
 exec s6-setuidgid mongodb mongod "${mongod_args[@]}"

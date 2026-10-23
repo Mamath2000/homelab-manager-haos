@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.38
+
+- Ship Homelab Manager 0.3.38, which reads `reset_superadmin_password` (ignored by the 0.3.37 hub).
+- Filter MongoDB info-level lines out of the log when `verbose_logs` is off (`--quiet` alone keeps them).
+
 ## 0.3.37-3
 
 - Add a configuration option to reset the superadmin password on startup.
