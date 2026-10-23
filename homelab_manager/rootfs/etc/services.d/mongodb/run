@@ -1,0 +1,9 @@
+#!/usr/bin/with-contenv bashio
+# shellcheck shell=bash
+set -euo pipefail
+
+mkdir -p /data/mongodb
+chown mongodb:mongodb /data/mongodb
+
+bashio::log.info "Démarrage de MongoDB 7 sur le stockage persistant"
+exec s6-setuidgid mongodb mongod --dbpath /data/mongodb --bind_ip 127.0.0.1 --port 27017

@@ -1,0 +1,30 @@
+#!/usr/bin/with-contenv bashio
+# shellcheck shell=bash
+set -euo pipefail
+
+mongo_ready() {
+    (exec 3<>/dev/tcp/127.0.0.1/27017) >/dev/null 2>&1
+}
+
+for _ in {1..60}; do
+    if mongo_ready; then
+        break
+    fi
+    sleep 1
+done
+
+if ! mongo_ready; then
+    bashio::exit.nok "MongoDB n'a pas démarré après 60 secondes."
+fi
+
+export MONGO_URL=mongodb://127.0.0.1:27017/homelab
+export PORT=3000
+export AGENT_TLS_PORT=3443
+export HOST=0.0.0.0
+export WEB_DIR=/app/web
+export AGENT_BIN_DIR=/app/agent
+export TZ
+TZ=$(bashio::config 'timezone')
+
+bashio::log.info "Démarrage du hub Homelab Manager"
+exec s6-setuidgid node /usr/local/bin/node /app/hub/dist/index.js

@@ -1,0 +1,7 @@
+configuration:
+  timezone:
+    name: Fuseau horaire
+    description: Fuseau horaire IANA du hub, par exemple Europe/Paris.
+network:
+  3000/tcp: Interface web du hub
+  3443/tcp: Connexion TLS des agents

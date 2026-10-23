@@ -1,0 +1,126 @@
+# Builds and publishes the standalone Homelab Manager app for Home Assistant OS.
+name: Build hub app
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: App version (image tag, config.yaml)
+        required: true
+        type: string
+      hub_version:
+        description: Homelab Manager release shipped in the app image
+        required: true
+        type: string
+      commit:
+        description: Write the app and hub versions to the repository after the push
+        required: false
+        type: boolean
+        default: false
+
+env:
+  APP: homelab_manager
+  IMAGE_NAME: homelab-manager-haos
+  ARCHITECTURES: '["amd64","aarch64"]'
+
+permissions:
+  contents: read
+
+jobs:
+  prepare:
+    name: Prepare
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - name: Prepare build matrix
+        id: matrix
+        uses: home-assistant/builder/actions/prepare-multi-arch-matrix@2026.09.0
+        with:
+          architectures: ${{ env.ARCHITECTURES }}
+          image-name: ${{ env.IMAGE_NAME }}
+          registry-prefix: ghcr.io/mamath2000
+
+  build:
+    name: Build ${{ matrix.arch }} image
+    needs: prepare
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+      id-token: write
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.prepare.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - name: Build and publish image
+        uses: home-assistant/builder/actions/build-image@2026.09.0
+        with:
+          arch: ${{ matrix.arch }}
+          container-registry-password: ${{ secrets.GITHUB_TOKEN }}
+          context: ./${{ env.APP }}
+          image: ${{ matrix.image }}
+          image-tags: |
+            ${{ inputs.version }}
+            latest
+          build-args: |
+            HUB_VERSION=${{ inputs.hub_version }}
+          labels: |
+            io.hass.type=app
+            io.hass.name=Homelab Manager
+            io.hass.url=https://github.com/Mamath2000/homelab-manager-haos
+          push: "true"
+          skip-existing: ${{ inputs.version }}
+          version: ${{ inputs.version }}
+
+  manifest:
+    name: Publish multi-arch manifest
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      packages: write
+    steps:
+      - uses: home-assistant/builder/actions/publish-multi-arch-manifest@2026.09.0
+        with:
+          architectures: ${{ env.ARCHITECTURES }}
+          container-registry-password: ${{ secrets.GITHUB_TOKEN }}
+          image-name: ${{ env.IMAGE_NAME }}
+          image-tags: |
+            ${{ inputs.version }}
+            latest
+          registry-prefix: ghcr.io/mamath2000
+          skip-existing: ${{ inputs.version }}
+
+  commit:
+    name: Write app version ${{ inputs.version }}
+    needs: manifest
+    if: inputs.commit
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - name: Bump config.yaml, Dockerfile and changelog
+        env:
+          VERSION: ${{ inputs.version }}
+          HUB_VERSION: ${{ inputs.hub_version }}
+        run: |
+          sed -i "s/^version: .*/version: \"${VERSION}\"/" "${APP}/config.yaml"
+          sed -i "s/^ARG HUB_VERSION=.*/ARG HUB_VERSION=${HUB_VERSION}/" "${APP}/Dockerfile"
+          {
+            echo "## ${VERSION}"
+            echo
+            echo "- Hub Homelab Manager ${HUB_VERSION}"
+            echo
+            cat "${APP}/CHANGELOG.md"
+          } > CHANGELOG.new && mv CHANGELOG.new "${APP}/CHANGELOG.md"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "${APP}/config.yaml" "${APP}/Dockerfile" "${APP}/CHANGELOG.md"
+          git commit -m "Hub app ${VERSION} (Homelab Manager ${HUB_VERSION})"
+          git push

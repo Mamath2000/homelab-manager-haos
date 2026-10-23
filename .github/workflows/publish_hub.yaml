@@ -1,0 +1,40 @@
+# Build the app image when its pinned hub or packaging version changes.
+name: Publish hub app
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - homelab_manager/config.yaml
+      - homelab_manager/Dockerfile
+      - homelab_manager/rootfs/**
+
+permissions:
+  contents: read
+
+jobs:
+  version:
+    name: Read versions
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+      hub_version: ${{ steps.v.outputs.hub_version }}
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - id: v
+        run: |
+          echo "version=$(sed -n 's/^version: "\(.*\)"/\1/p' homelab_manager/config.yaml)" >> "$GITHUB_OUTPUT"
+          echo "hub_version=$(sed -n 's/^ARG HUB_VERSION=//p' homelab_manager/Dockerfile)" >> "$GITHUB_OUTPUT"
+
+  build:
+    name: Build and publish
+    needs: version
+    if: needs.version.outputs.version != '0.0.0'
+    permissions:
+      contents: read
+      id-token: write
+      packages: write
+    uses: ./.github/workflows/build_hub.yaml
+    with:
+      version: ${{ needs.version.outputs.version }}
+      hub_version: ${{ needs.version.outputs.hub_version }}

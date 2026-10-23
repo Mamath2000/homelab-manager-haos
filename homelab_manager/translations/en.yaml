@@ -1,0 +1,7 @@
+configuration:
+  timezone:
+    name: Time zone
+    description: IANA time zone for the hub, for example Europe/Paris.
+network:
+  3000/tcp: Hub web interface
+  3443/tcp: Agent TLS connection
