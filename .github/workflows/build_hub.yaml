@@ -17,6 +17,16 @@ on:
         required: false
         type: boolean
         default: false
+  workflow_dispatch:
+    inputs:
+      version:
+        description: App version to publish
+        required: true
+        type: string
+      hub_version:
+        description: Homelab Manager release shipped in the app image
+        required: true
+        type: string
 
 env:
   APP: homelab_manager
