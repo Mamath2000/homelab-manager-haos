@@ -1,7 +1,7 @@
 # https://developers.home-assistant.io/docs/apps/configuration#app-configuration
-# version tracks the hub release; packaging-only changes use a suffix (0.3.37-2).
+# version tracks the hub release; packaging-only changes use a suffix (0.3.37-3).
 name: Homelab Manager
-version: "0.3.37-2"
+version: "0.3.37-3"
 slug: homelab_manager
 description: Hub Homelab Manager autonome avec MongoDB pour Home Assistant OS
 url: https://github.com/Mamath2000/homelab-manager-haos
@@ -26,5 +26,9 @@ map:
 image: ghcr.io/mamath2000/homelab-manager-haos
 options:
   timezone: Europe/Paris
+  reset_superadmin_password: false
+  verbose_logs: false
 schema:
   timezone: str
+  reset_superadmin_password: bool
+  verbose_logs: bool

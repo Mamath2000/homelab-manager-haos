@@ -2,6 +2,14 @@ configuration:
   timezone:
     name: Time zone
     description: IANA time zone for the hub, for example Europe/Paris.
+  reset_superadmin_password:
+    name: Reset superadmin password at startup
+    description: >-
+      Generate a new one-time password, valid for 15 minutes, in the log on the next start.
+      Turn this option off after retrieving the password.
+  verbose_logs:
+    name: Verbose logs
+    description: Log every HTTP request and MongoDB event. When off, only warnings and errors are logged.
 network:
   3000/tcp: Hub web interface
   3443/tcp: Agent TLS connection

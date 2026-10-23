@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.37-3
+
+- Add a configuration option to reset the superadmin password on startup.
+- Add a `verbose_logs` option (off by default): hub logs at `warn` and MongoDB `--quiet` unless enabled.
+
 ## 0.3.37-2
 
 - Add the MongoDB service account required by the official MongoDB binary.

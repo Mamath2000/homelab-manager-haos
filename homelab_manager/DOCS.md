@@ -33,6 +33,8 @@ Pour un accès distant, place le hub derrière un reverse proxy HTTPS et une aut
 | Option | Description |
 | --- | --- |
 | `timezone` | Fuseau horaire du hub, au format IANA, par exemple `Europe/Paris`. |
+| `reset_superadmin_password` | Active cette option et redémarre l'application pour générer un nouveau mot de passe `superadmin` à usage unique, valable 15 minutes. Récupère-le dans le journal, puis désactive l'option. |
+| `verbose_logs` | Désactivé par défaut : seuls les avertissements et erreurs du hub et de MongoDB sont journalisés. Active-le pour tracer chaque requête HTTP et les événements MongoDB. |
 
 ## Sauvegardes et limites
 

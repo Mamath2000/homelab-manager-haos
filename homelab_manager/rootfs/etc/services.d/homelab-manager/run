@@ -25,6 +25,12 @@ export WEB_DIR=/app/web
 export AGENT_BIN_DIR=/app/agent
 export TZ
 TZ=$(bashio::config 'timezone')
+export HM_RESET_SUPERADMIN_PASSWORD
+HM_RESET_SUPERADMIN_PASSWORD=$(bashio::config 'reset_superadmin_password')
+export LOG_LEVEL=warn
+if bashio::config.true 'verbose_logs'; then
+    LOG_LEVEL=info
+fi
 
 bashio::log.info "Démarrage du hub Homelab Manager"
 exec s6-setuidgid node /usr/local/bin/node /app/hub/dist/index.js
