@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.37-2
+
+- Add the MongoDB service account required by the official MongoDB binary.
+
 ## 0.3.37-1
 
 - Package MongoDB from the official multi-architecture image so the app also builds for ARM64.

@@ -16,7 +16,9 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 RUN groupadd --gid 1000 node \
-    && useradd --uid 1000 --gid node --no-create-home --shell /usr/sbin/nologin node
+    && useradd --uid 1000 --gid node --no-create-home --shell /usr/sbin/nologin node \
+    && groupadd --system --gid 999 mongodb \
+    && useradd --system --uid 999 --gid mongodb --home-dir /data/db --no-create-home --shell /usr/sbin/nologin mongodb
 
 COPY --from=hub /app/hub /app/hub
 COPY --from=hub /app/web /app/web
