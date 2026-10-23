@@ -1,3 +1,87 @@
+## 0.4.33
+
+- Agent 0.4.33, image Homelab Manager 0.3.35
+
+## 0.4.32
+
+- Agent 0.4.32, image Homelab Manager 0.3.33
+
+## 0.4.31
+
+- Agent 0.4.31, image Homelab Manager 0.3.32
+
+## 0.4.30
+
+- Agent 0.4.30, image Homelab Manager 0.3.31
+
+## 0.4.29
+
+- Agent 0.4.29, image Homelab Manager 0.3.28
+
+## 0.4.28
+
+- Agent 0.4.28, image Homelab Manager 0.3.26
+
+## 0.4.26
+
+- Agent 0.4.26, image Homelab Manager 0.3.25
+
+## 0.4.25
+
+- Agent 0.4.25, image Homelab Manager 0.3.24
+
+## 0.4.24
+
+- Agent 0.4.24, image Homelab Manager 0.3.13
+
+## 0.4.23
+
+- Agent 0.4.23, image Homelab Manager 0.3.9
+
+## 0.4.21
+
+- Agent 0.4.21, image Homelab Manager 0.3.6
+
+## 0.4.20
+
+- Agent 0.4.20, image Homelab Manager 0.3.5
+
+## 0.4.19
+
+- Agent 0.4.19, image Homelab Manager 0.3.4
+
+## 0.4.18
+
+- Agent 0.4.18, image Homelab Manager 0.3.3
+
+## 0.4.17
+
+- Agent 0.4.17, image Homelab Manager 0.3.2
+
+## 0.4.16
+
+- Agent 0.4.16, image Homelab Manager 0.3.0
+
+## 0.4.15
+
+- Agent 0.4.15, image Homelab Manager 0.2.51
+
+## 0.4.14
+
+- Agent 0.4.14, image Homelab Manager 0.2.46
+
+## 0.4.13
+
+- Agent 0.4.13, image Homelab Manager 0.2.45
+
+## 0.4.12
+
+- Agent 0.4.12, image Homelab Manager 0.2.43
+
+## 0.4.11
+
+- Agent 0.4.11, image Homelab Manager 0.2.39
+
 ## 0.4.10
 
 - Agent 0.4.10, image Homelab Manager 0.2.32
