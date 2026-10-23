@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.37-1
+
+- Package MongoDB from the official multi-architecture image so the app also builds for ARM64.
+
 ## 0.3.37
 
 - Hub Homelab Manager 0.3.37.
