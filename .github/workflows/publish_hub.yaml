@@ -8,6 +8,7 @@ on:
       - homelab_manager/config.yaml
       - homelab_manager/Dockerfile
       - homelab_manager/rootfs/**
+  workflow_dispatch:
 
 permissions:
   contents: read
