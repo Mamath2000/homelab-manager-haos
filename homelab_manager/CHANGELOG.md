@@ -1,3 +1,7 @@
+## 0.3.39
+
+- Hub Homelab Manager 0.3.39
+
 # Changelog
 
 ## 0.3.38
