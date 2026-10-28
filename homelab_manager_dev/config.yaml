@@ -5,6 +5,7 @@
 name: Homelab Manager (dev)
 version: "1.0.3"
 slug: homelab_manager_dev
+stage: experimental
 description: Hub Homelab Manager autonome avec MongoDB pour Home Assistant OS — version de développement
 url: https://github.com/Mamath2000/homelab-manager-haos
 arch:

@@ -6,6 +6,7 @@
 name: Homelab Manager Agent (dev)
 version: "1.0.0"
 slug: homelab_agent_dev
+stage: experimental
 description: Agent Homelab Manager pour Home Assistant OS (hôte, sauvegardes Proxmox VE et Home Assistant) — version de développement
 url: https://github.com/Mamath2000/homelab-manager-haos
 arch:
