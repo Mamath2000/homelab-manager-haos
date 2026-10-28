@@ -1,5 +1,7 @@
 # Builds and publishes the image of homelab_agent at its config.yaml version (tag skipped if it
 # already exists), then writes that version and HM_VERSION in the repository when asked.
+# Channel dev: same build context, image homelab-agent-haos-dev, version written in homelab_agent_dev
+# (its HM_VERSION is the X.Y.Z-dev image, passed as a build argument only).
 name: Build
 
 on:
@@ -18,10 +20,17 @@ on:
         required: false
         type: boolean
         default: false
+      channel:
+        description: prod (homelab_agent) or dev (homelab_agent_dev, image -dev)
+        required: false
+        type: string
+        default: prod
 
 env:
-  APP: homelab_agent
-  IMAGE_NAME: homelab-agent-haos
+  CONTEXT: homelab_agent
+  APP: ${{ inputs.channel == 'dev' && 'homelab_agent_dev' || 'homelab_agent' }}
+  IMAGE_NAME: ${{ inputs.channel == 'dev' && 'homelab-agent-haos-dev' || 'homelab-agent-haos' }}
+  APP_NAME: ${{ inputs.channel == 'dev' && 'Homelab Manager Agent (dev)' || 'Homelab Manager Agent' }}
   ARCHITECTURES: '["amd64"]'
 
 permissions:
@@ -63,7 +72,7 @@ jobs:
         with:
           arch: ${{ matrix.arch }}
           container-registry-password: ${{ secrets.GITHUB_TOKEN }}
-          context: ./${{ env.APP }}
+          context: ./${{ env.CONTEXT }}
           image: ${{ matrix.image }}
           image-tags: |
             ${{ inputs.version }}
@@ -72,7 +81,7 @@ jobs:
             HM_VERSION=${{ inputs.hm_version }}
           labels: |
             io.hass.type=app
-            io.hass.name=Homelab Manager Agent
+            io.hass.name=${{ env.APP_NAME }}
             io.hass.url=https://github.com/Mamath2000/homelab-manager-haos
           push: "true"
           skip-existing: ${{ inputs.version }}
@@ -113,7 +122,12 @@ jobs:
           HM_VERSION: ${{ inputs.hm_version }}
         run: |
           sed -i "s/^version: .*/version: \"${VERSION}\"/" "${APP}/config.yaml"
-          sed -i "s/^ARG HM_VERSION=.*/ARG HM_VERSION=${HM_VERSION}/" "${APP}/Dockerfile"
+          files="${APP}/config.yaml ${APP}/CHANGELOG.md"
+          # the Dockerfile pins the prod release only
+          if [ "${APP}" = "${CONTEXT}" ]; then
+            sed -i "s/^ARG HM_VERSION=.*/ARG HM_VERSION=${HM_VERSION}/" "${APP}/Dockerfile"
+            files="${files} ${APP}/Dockerfile"
+          fi
           {
             echo "## ${VERSION}"
             echo
@@ -123,6 +137,8 @@ jobs:
           } > CHANGELOG.new && mv CHANGELOG.new "${APP}/CHANGELOG.md"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add "${APP}/config.yaml" "${APP}/Dockerfile" "${APP}/CHANGELOG.md"
-          git commit -m "Agent ${VERSION} (Homelab Manager ${HM_VERSION})"
+          git add ${files}
+          git commit -m "${APP_NAME} ${VERSION} (Homelab Manager ${HM_VERSION})"
+          # the agent and hub syncs of a release may commit at the same time
+          git pull -q --rebase
           git push

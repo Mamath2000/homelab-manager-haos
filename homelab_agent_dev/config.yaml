@@ -1,0 +1,28 @@
+# https://developers.home-assistant.io/docs/apps/configuration#app-configuration
+# Dev channel of homelab_agent: development releases of Homelab Manager (X.Y.Z-dev images), built from homelab_agent/
+# by sync.yaml / sync-hub.yaml (channel dev). Same app, other slug: install either this one or homelab_agent.
+# version = agent version (homelab-manager agent/VERSION), set by .github/workflows/sync.yaml;
+# a packaging change alone gets a suffix (0.1.23-1).
+name: Homelab Manager Agent (dev)
+version: "0.0.0"
+slug: homelab_agent_dev
+description: Agent Homelab Manager pour Home Assistant OS (hôte, sauvegardes Proxmox VE et Home Assistant) — version de développement
+url: https://github.com/Mamath2000/homelab-manager-haos
+arch:
+  - amd64
+init: false
+startup: services
+boot: auto
+# the VM's interfaces: their MAC addresses link the host to its Proxmox VE guest
+host_network: true
+# /os/info and /host/info (role "default" reads every /<x>/info)
+hassio_api: true
+hassio_role: default
+# Home Assistant backups, read only: backup/info, backup/config/info, backup/agents/info of the Core
+# WebSocket API (admin commands; only Core knows the backup agents of the integrations, e.g. SFTP)
+homeassistant_api: true
+image: ghcr.io/mamath2000/homelab-agent-haos-dev
+options:
+  install_token: ""
+schema:
+  install_token: password?

@@ -1,12 +1,19 @@
-# Follows the agent of homelab-manager: every day (and on demand, e.g. after `make docker-release`
-# of the hub), when the agent of its last image on Docker Hub differs from this app, the image is built
-# and the version written: Supervisor then offers (or installs, with auto-update) the update.
+# Follows the agent of homelab-manager: every day (and on demand, e.g. after `make docker-release` /
+# `make docker-promote` of the hub), when the agent of its last image on Docker Hub differs from this app,
+# the image is built and the version written: Supervisor then offers (or installs, with auto-update) the update.
+# Two channels: prod (homelab_agent) follows the X.Y.Z tags, dev (homelab_agent_dev) the X.Y.Z-dev tags.
 name: Sync agent
 
 on:
   schedule:
     - cron: "17 5 * * *"
   workflow_dispatch:
+    inputs:
+      channel:
+        description: Channel to check
+        type: choice
+        options: [all, prod, dev]
+        default: all
 
 permissions:
   contents: read
@@ -16,41 +23,65 @@ jobs:
     name: Check homelab-manager image
     runs-on: ubuntu-latest
     outputs:
-      changed: ${{ steps.check.outputs.changed }}
-      version: ${{ steps.check.outputs.version }}
-      hm_version: ${{ steps.check.outputs.hm_version }}
+      prod_changed: ${{ steps.check.outputs.prod_changed }}
+      prod_version: ${{ steps.check.outputs.prod_version }}
+      prod_hm_version: ${{ steps.check.outputs.prod_hm_version }}
+      dev_changed: ${{ steps.check.outputs.dev_changed }}
+      dev_version: ${{ steps.check.outputs.dev_version }}
+      dev_hm_version: ${{ steps.check.outputs.dev_hm_version }}
     steps:
       - uses: actions/checkout@v7.0.1
       - name: Compare agent versions
         id: check
+        env:
+          CHANNEL: ${{ inputs.channel || 'all' }}
         run: |
-          # last release of the hub image (Docker Hub, always pushed by make docker-release)
-          hm_version=$(curl -fsSL "https://hub.docker.com/v2/repositories/mathmath350/homelab-manager/tags?page_size=100" \
-            | jq -r '.results[].name' | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1)
-          # version of the agent binary it ships
-          docker pull -q "mathmath350/homelab-manager:${hm_version}" >/dev/null
-          agent=$(docker run --rm --entrypoint cat "mathmath350/homelab-manager:${hm_version}" /app/agent/VERSION | tr -d '[:space:]')
-          current=$(sed -n 's/^version: "\(.*\)"/\1/p' homelab_agent/config.yaml)
-          echo "homelab-manager ${hm_version}, agent ${agent}, app ${current}"
-          # a packaging suffix (0.1.23-1) belongs to the same agent
-          if [ -n "${agent}" ] && [ "${agent}" != "${current%%-*}" ]; then
-            echo "changed=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-          fi
-          echo "version=${agent}" >> "$GITHUB_OUTPUT"
-          echo "hm_version=${hm_version}" >> "$GITHUB_OUTPUT"
+          tags=$(curl -fsSL "https://hub.docker.com/v2/repositories/mathmath350/homelab-manager/tags?page_size=100" \
+            | jq -r '.results[].name')
+          for channel in prod dev; do
+            case "${CHANNEL}" in all|"${channel}") ;; *) continue ;; esac
+            if [ "${channel}" = dev ]; then app=homelab_agent_dev suffix=-dev; else app=homelab_agent suffix=; fi
+            # last release of the hub image on this channel
+            hm_version=$(echo "${tags}" | grep -E "^[0-9]+\.[0-9]+\.[0-9]+${suffix}\$" | sort -V | tail -1)
+            [ -n "${hm_version}" ] || { echo "No ${channel} release of homelab-manager"; continue; }
+            # version of the agent binary it ships
+            docker pull -q "mathmath350/homelab-manager:${hm_version}" >/dev/null
+            agent=$(docker run --rm --entrypoint cat "mathmath350/homelab-manager:${hm_version}" /app/agent/VERSION | tr -d '[:space:]')
+            current=$(sed -n 's/^version: "\(.*\)"/\1/p' "${app}/config.yaml")
+            echo "${channel}: homelab-manager ${hm_version}, agent ${agent}, app ${current}"
+            # a packaging suffix (0.1.23-1) belongs to the same agent
+            if [ -n "${agent}" ] && [ "${agent}" != "${current%%-*}" ]; then
+              echo "${channel}_changed=true" >> "$GITHUB_OUTPUT"
+            fi
+            echo "${channel}_version=${agent}" >> "$GITHUB_OUTPUT"
+            echo "${channel}_hm_version=${hm_version}" >> "$GITHUB_OUTPUT"
+          done
 
   build:
-    name: Build and publish
+    name: Build and publish (prod)
     needs: check
-    if: needs.check.outputs.changed == 'true'
+    if: needs.check.outputs.prod_changed == 'true'
     permissions:
       contents: write
       id-token: write
       packages: write
     uses: ./.github/workflows/build.yaml
     with:
-      version: ${{ needs.check.outputs.version }}
-      hm_version: ${{ needs.check.outputs.hm_version }}
+      version: ${{ needs.check.outputs.prod_version }}
+      hm_version: ${{ needs.check.outputs.prod_hm_version }}
       commit: true
+
+  build-dev:
+    name: Build and publish (dev)
+    needs: check
+    if: needs.check.outputs.dev_changed == 'true'
+    permissions:
+      contents: write
+      id-token: write
+      packages: write
+    uses: ./.github/workflows/build.yaml
+    with:
+      version: ${{ needs.check.outputs.dev_version }}
+      hm_version: ${{ needs.check.outputs.dev_hm_version }}
+      commit: true
+      channel: dev

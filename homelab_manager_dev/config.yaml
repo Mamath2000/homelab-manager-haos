@@ -1,0 +1,36 @@
+# https://developers.home-assistant.io/docs/apps/configuration#app-configuration
+# Dev channel of homelab_manager: development releases of Homelab Manager (X.Y.Z-dev images), built from homelab_manager/
+# by sync.yaml / sync-hub.yaml (channel dev). Same app, other slug: install either this one or homelab_manager.
+# version tracks the hub release; packaging-only changes use a suffix (0.3.38-1).
+name: Homelab Manager (dev)
+version: "0.0.0"
+slug: homelab_manager_dev
+description: Hub Homelab Manager autonome avec MongoDB pour Home Assistant OS — version de développement
+url: https://github.com/Mamath2000/homelab-manager-haos
+arch:
+  - amd64
+  - aarch64
+init: false
+startup: application
+boot: auto
+timeout: 60
+ports:
+  3000/tcp: 3000
+  3443/tcp: 3443
+ports_description:
+  3000/tcp: Interface web du hub
+  3443/tcp: Connexion TLS des agents
+webui: "http://[HOST]:[PORT:3000]"
+watchdog: "http://[HOST]:[PORT:3000]/api/health"
+map:
+  - type: data
+    read_only: false
+image: ghcr.io/mamath2000/homelab-manager-haos-dev
+options:
+  timezone: Europe/Paris
+  reset_superadmin_password: false
+  verbose_logs: false
+schema:
+  timezone: str
+  reset_superadmin_password: bool
+  verbose_logs: bool

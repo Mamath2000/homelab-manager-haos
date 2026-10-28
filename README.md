@@ -8,9 +8,13 @@ Dépôt d'applications (add-ons) Home Assistant pour [Homelab Manager](https://g
 |---|---|
 | [Homelab Manager](homelab_manager/) | Le hub complet avec MongoDB, installé et sauvegardé dans Home Assistant OS |
 | [Homelab Manager Agent](homelab_agent/) | L'agent du hub, dans Home Assistant OS : hôte, version, rattachement des sauvegardes Proxmox VE |
+| [Homelab Manager (dev)](homelab_manager_dev/) | Version de développement du hub (releases dev, avant la prod) |
+| [Homelab Manager Agent (dev)](homelab_agent_dev/) | Version de développement de l'agent (releases dev, avant la prod) |
 
 L'application **Homelab Manager** héberge le hub ; l'application **Homelab Manager Agent** rattache un Home Assistant à un hub.
 Elles sont indépendantes : installe l'agent seulement si tu as déjà un hub ailleurs.
+Les applications **(dev)** suivent les versions de développement : à n'installer que pour tester, à la place de
+l'application prod (même fonctionnement, autre slug).
 
 ## Fonctionnement
 
@@ -25,6 +29,12 @@ Elles sont indépendantes : installe l'agent seulement si tu as déjà un hub ai
 - La version de l'application agent est celle de l'agent. `sync.yaml` compare chaque jour l'agent de la dernière image du hub
   sur Docker Hub ; s'il a changé, l'image est construite et publiée, puis la version est écrite dans `config.yaml` :
   Home Assistant propose alors la mise à jour (ou l'installe, avec la mise à jour automatique).
+- **Deux canaux.** Homelab Manager publie ses releases de développement sous `X.Y.Z-dev` (`make docker-release`) et ne
+  publie `X.Y.Z` / `latest` qu'à la promotion (`make docker-promote`). `sync.yaml` et `sync-hub.yaml` suivent les deux :
+  les tags `X.Y.Z` pour `homelab_agent` / `homelab_manager`, les tags `X.Y.Z-dev` pour `homelab_agent_dev` /
+  `homelab_manager_dev` (images `…-haos-dev`). Les applications dev n'ont que leur `config.yaml`, leur doc et leurs
+  traductions : leur image est construite depuis le dossier de l'application prod. `make sync CHANNEL=dev` (ou `prod`)
+  ne vérifie qu'un canal.
 - Un changement de l'empaquetage seul (`Dockerfile`, `rootfs/`) prend un suffixe de version (`0.1.23-1`), poussé à la main :
   `publish.yaml` construit l'image de cette version.
 - Dans l'application, l'agent est en mode Home Assistant OS (`SUPERVISOR_TOKEN`) : OS et nom d'hôte lus par l'API

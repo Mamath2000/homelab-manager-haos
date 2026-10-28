@@ -1,0 +1,15 @@
+configuration:
+  timezone:
+    name: Fuseau horaire
+    description: Fuseau horaire IANA du hub, par exemple Europe/Paris.
+  reset_superadmin_password:
+    name: Réinitialiser le mot de passe superadmin au démarrage
+    description: >-
+      Génère un nouveau mot de passe à usage unique, valable 15 minutes, dans le journal au prochain démarrage.
+      Désactive cette option après avoir récupéré le mot de passe.
+  verbose_logs:
+    name: Journaux détaillés
+    description: Journalise chaque requête HTTP et les événements MongoDB. Désactivé, seuls les avertissements et erreurs sont journalisés.
+network:
+  3000/tcp: Interface web du hub
+  3443/tcp: Connexion TLS des agents

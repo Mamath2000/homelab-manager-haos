@@ -9,6 +9,8 @@ HUB_IMAGE_LOCAL := homelab-manager-haos:local
 HUB_APP_VERSION := $(shell sed -n 's/^version: "\(.*\)"/\1/p' $(HUB_APP)/config.yaml)
 HUB_VERSION := $(shell sed -n 's/^ARG HUB_VERSION=//p' $(HUB_APP)/Dockerfile)
 MANAGER_IMAGE ?= mathmath350/homelab-manager:$(HUB_VERSION)
+# Canal des synchros (sync, sync-hub) : all, prod ou dev
+CHANNEL    ?= all
 
 .DEFAULT_GOAL := help
 .PHONY: help version lint build shell sync build-hub shell-hub sync-hub
@@ -33,8 +35,8 @@ build: ## Image locale $(IMAGE) : make build [HUB_IMAGE=homelab-manager:latest]
 shell: ## Shell dans l'image locale
 	docker run --rm -it --entrypoint bash $(IMAGE)
 
-sync: ## Lance tout de suite la vérification de version (GitHub Actions)
-	gh workflow run sync.yaml -R Mamath2000/homelab-manager-haos
+sync: ## Lance tout de suite la vérification de version de l'agent (GitHub Actions) [CHANNEL=all|prod|dev]
+	gh workflow run sync.yaml -R Mamath2000/homelab-manager-haos -f channel=$(CHANNEL)
 
 build-hub: ## Image locale du hub autonome : make build-hub [MANAGER_IMAGE=…]
 	docker build --build-arg HUB_IMAGE=$(MANAGER_IMAGE) -t $(HUB_IMAGE_LOCAL) $(HUB_APP)
@@ -42,5 +44,5 @@ build-hub: ## Image locale du hub autonome : make build-hub [MANAGER_IMAGE=…]
 shell-hub: ## Shell dans l'image locale du hub autonome
 	docker run --rm -it --entrypoint bash $(HUB_IMAGE_LOCAL)
 
-sync-hub: ## Lance tout de suite la vérification de version du hub (GitHub Actions)
-	gh workflow run sync-hub.yaml -R Mamath2000/homelab-manager-haos
+sync-hub: ## Lance tout de suite la vérification de version du hub (GitHub Actions) [CHANNEL=all|prod|dev]
+	gh workflow run sync-hub.yaml -R Mamath2000/homelab-manager-haos -f channel=$(CHANNEL)

@@ -1,10 +1,18 @@
 # Follows the latest Homelab Manager release and publishes its standalone HAOS app image.
+# Two channels: prod (homelab_manager) follows the X.Y.Z tags, dev (homelab_manager_dev) the X.Y.Z-dev
+# tags (app version X.Y.Z, hub image X.Y.Z-dev).
 name: Sync hub app
 
 on:
   schedule:
     - cron: "29 5 * * *"
   workflow_dispatch:
+    inputs:
+      channel:
+        description: Channel to check
+        type: choice
+        options: [all, prod, dev]
+        default: all
 
 permissions:
   contents: read
@@ -14,38 +22,65 @@ jobs:
     name: Check Homelab Manager release
     runs-on: ubuntu-latest
     outputs:
-      changed: ${{ steps.check.outputs.changed }}
-      version: ${{ steps.check.outputs.version }}
-      hub_version: ${{ steps.check.outputs.hub_version }}
+      prod_changed: ${{ steps.check.outputs.prod_changed }}
+      prod_version: ${{ steps.check.outputs.prod_version }}
+      prod_hub_version: ${{ steps.check.outputs.prod_hub_version }}
+      dev_changed: ${{ steps.check.outputs.dev_changed }}
+      dev_version: ${{ steps.check.outputs.dev_version }}
+      dev_hub_version: ${{ steps.check.outputs.dev_hub_version }}
     steps:
       - uses: actions/checkout@v7.0.1
       - name: Compare published hub version
         id: check
+        env:
+          CHANNEL: ${{ inputs.channel || 'all' }}
         run: |
-          hub_version=$(curl -fsSL "https://hub.docker.com/v2/repositories/mathmath350/homelab-manager/tags?page_size=100" \
-            | jq -r '.results[].name' | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1)
-          current=$(sed -n 's/^version: "\(.*\)"/\1/p' homelab_manager/config.yaml)
-          [ -n "${hub_version}" ] || { echo "No stable hub release found" >&2; exit 1; }
-          [ -n "${current}" ] || { echo "Could not read app version" >&2; exit 1; }
-          echo "Homelab Manager ${hub_version}, app ${current}"
-          if [ -n "${hub_version}" ] && [ "${hub_version}" != "${current%%-*}" ]; then
-            echo "changed=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-          fi
-          echo "version=${hub_version}" >> "$GITHUB_OUTPUT"
-          echo "hub_version=${hub_version}" >> "$GITHUB_OUTPUT"
+          tags=$(curl -fsSL "https://hub.docker.com/v2/repositories/mathmath350/homelab-manager/tags?page_size=100" \
+            | jq -r '.results[].name')
+          for channel in prod dev; do
+            case "${CHANNEL}" in all|"${channel}") ;; *) continue ;; esac
+            if [ "${channel}" = dev ]; then app=homelab_manager_dev suffix=-dev; else app=homelab_manager suffix=; fi
+            hub_version=$(echo "${tags}" | grep -E "^[0-9]+\.[0-9]+\.[0-9]+${suffix}\$" | sort -V | tail -1)
+            if [ -z "${hub_version}" ]; then
+              echo "No ${channel} hub release found" >&2
+              [ "${channel}" = dev ] && continue || exit 1
+            fi
+            version=${hub_version%-dev}
+            current=$(sed -n 's/^version: "\(.*\)"/\1/p' "${app}/config.yaml")
+            [ -n "${current}" ] || { echo "Could not read ${app} version" >&2; exit 1; }
+            echo "${channel}: Homelab Manager ${hub_version}, app ${current}"
+            if [ "${version}" != "${current%%-*}" ]; then
+              echo "${channel}_changed=true" >> "$GITHUB_OUTPUT"
+            fi
+            echo "${channel}_version=${version}" >> "$GITHUB_OUTPUT"
+            echo "${channel}_hub_version=${hub_version}" >> "$GITHUB_OUTPUT"
+          done
 
   build:
-    name: Build and publish
+    name: Build and publish (prod)
     needs: check
-    if: needs.check.outputs.changed == 'true'
+    if: needs.check.outputs.prod_changed == 'true'
     permissions:
       contents: write
       id-token: write
       packages: write
     uses: ./.github/workflows/build_hub.yaml
     with:
-      version: ${{ needs.check.outputs.version }}
-      hub_version: ${{ needs.check.outputs.hub_version }}
+      version: ${{ needs.check.outputs.prod_version }}
+      hub_version: ${{ needs.check.outputs.prod_hub_version }}
       commit: true
+
+  build-dev:
+    name: Build and publish (dev)
+    needs: check
+    if: needs.check.outputs.dev_changed == 'true'
+    permissions:
+      contents: write
+      id-token: write
+      packages: write
+    uses: ./.github/workflows/build_hub.yaml
+    with:
+      version: ${{ needs.check.outputs.dev_version }}
+      hub_version: ${{ needs.check.outputs.dev_hub_version }}
+      commit: true
+      channel: dev
