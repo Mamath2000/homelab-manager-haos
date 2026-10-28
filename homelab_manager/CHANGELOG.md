@@ -1,3 +1,7 @@
+## 0.4.1
+
+- Hub Homelab Manager 0.4.1
+
 ## 0.4.0
 
 - Hub Homelab Manager 0.4.0
