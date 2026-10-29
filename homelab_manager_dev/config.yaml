@@ -3,7 +3,7 @@
 # by sync.yaml / sync-hub.yaml (channel dev). Same app, other slug: install either this one or homelab_manager.
 # version tracks the hub release; packaging-only changes use a suffix (0.3.38-1).
 name: Homelab Manager (dev)
-version: "1.0.10"
+version: "1.0.11"
 slug: homelab_manager_dev
 stage: experimental
 description: Hub Homelab Manager autonome avec MongoDB pour Home Assistant OS — version de développement
