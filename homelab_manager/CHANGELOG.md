@@ -1,3 +1,7 @@
+## 1.2.2
+
+- Hub Homelab Manager 1.2.2
+
 ## 1.2.0
 
 - Hub Homelab Manager 1.2.0

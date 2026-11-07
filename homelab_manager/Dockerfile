@@ -1,5 +1,5 @@
 # https://developers.home-assistant.io/docs/apps/configuration#app-dockerfile
-ARG HUB_VERSION=1.2.0
+ARG HUB_VERSION=1.2.2
 ARG HUB_IMAGE=mathmath350/homelab-manager:${HUB_VERSION}
 ARG BUILD_FROM=ghcr.io/home-assistant/base-debian:bookworm
 
