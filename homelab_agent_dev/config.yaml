@@ -1,6 +1,6 @@
 # https://developers.home-assistant.io/docs/apps/configuration#app-configuration
 # Dev channel of homelab_agent: development releases of Homelab Manager (X.Y.Z-dev images), built from homelab_agent/
-# by sync.yaml / sync-hub.yaml (channel dev). Same app, other slug: install either this one or homelab_agent.
+# by sync.yaml (channel dev). Same app, other slug: install either this one or homelab_agent.
 # version = agent version (homelab-manager agent/VERSION), set by .github/workflows/sync.yaml;
 # a packaging change alone gets a suffix (0.1.23-1).
 name: Homelab Manager Agent (dev)
