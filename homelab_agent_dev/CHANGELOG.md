@@ -1,3 +1,7 @@
+## 1.2.15
+
+- Agent 1.2.15, image Homelab Manager 1.3.25-dev
+
 ## 1.2.14
 
 - Agent 1.2.14, image Homelab Manager 1.3.23-dev
